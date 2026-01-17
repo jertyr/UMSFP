@@ -1,24 +1,123 @@
-// Data storage
-let goals = [];
+// Initialize Firebase
+let auth;
+let db;
+let currentUser = null;
 let currentGoalId = null;
+let goals = [];
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    loadData();
-    showDashboard();
+    initializeFirebase();
 });
 
-// Load data from localStorage
-function loadData() {
-    const stored = localStorage.getItem('progressTrackerData');
-    if (stored) {
-        goals = JSON.parse(stored);
+function initializeFirebase() {
+    try {
+        // Initialize Firebase with config
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+
+        // Set up auth state listener
+        auth.onAuthStateChanged(handleAuthStateChanged);
+
+        // Set up login button
+        document.getElementById('google-login-btn').addEventListener('click', signInWithGoogle);
+        document.getElementById('logout-btn').addEventListener('click', signOut);
+    } catch (error) {
+        console.error('Firebase initialization error:', error);
+        alert('Firebase configuration needed. Please check firebase-config.js');
     }
 }
 
-// Save data to localStorage
-function saveData() {
-    localStorage.setItem('progressTrackerData', JSON.stringify(goals));
+// Authentication handlers
+function handleAuthStateChanged(user) {
+    if (user) {
+        currentUser = user;
+        showMainApp(user);
+        loadGoalsFromFirestore();
+    } else {
+        currentUser = null;
+        showLoginScreen();
+    }
+}
+
+function showLoginScreen() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('main-app').style.display = 'none';
+}
+
+function showMainApp(user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+
+    // Update user info in header
+    document.getElementById('user-name').textContent = user.displayName || 'User';
+    document.getElementById('user-avatar').src = user.photoURL || '';
+
+    showDashboard();
+}
+
+async function signInWithGoogle() {
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Failed to sign in. Please try again.');
+    }
+}
+
+async function signOut() {
+    if (confirm('Are you sure you want to sign out?')) {
+        try {
+            await auth.signOut();
+        } catch (error) {
+            console.error('Sign out error:', error);
+        }
+    }
+}
+
+// Firestore data operations
+async function loadGoalsFromFirestore() {
+    if (!currentUser) return;
+
+    try {
+        const goalsRef = db.collection('users').doc(currentUser.uid).collection('goals');
+        const snapshot = await goalsRef.orderBy('createdAt', 'desc').get();
+
+        goals = [];
+        snapshot.forEach(doc => {
+            goals.push({ id: doc.id, ...doc.data() });
+        });
+
+        renderGoals();
+    } catch (error) {
+        console.error('Error loading goals:', error);
+        alert('Failed to load goals. Please refresh the page.');
+    }
+}
+
+async function saveGoalToFirestore(goal) {
+    if (!currentUser) return;
+
+    try {
+        const goalsRef = db.collection('users').doc(currentUser.uid).collection('goals');
+        await goalsRef.doc(goal.id).set(goal);
+    } catch (error) {
+        console.error('Error saving goal:', error);
+        throw error;
+    }
+}
+
+async function deleteGoalFromFirestore(goalId) {
+    if (!currentUser) return;
+
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('goals').doc(goalId).delete();
+    } catch (error) {
+        console.error('Error deleting goal:', error);
+        throw error;
+    }
 }
 
 // Show/hide views
@@ -104,7 +203,7 @@ function cancelGoalForm() {
     showDashboard();
 }
 
-function saveGoal(event) {
+async function saveGoal(event) {
     event.preventDefault();
 
     const title = document.getElementById('goal-title').value;
@@ -124,9 +223,13 @@ function saveGoal(event) {
         createdAt: new Date().toISOString()
     };
 
-    goals.push(goal);
-    saveData();
-    showDashboard();
+    try {
+        await saveGoalToFirestore(goal);
+        goals.push(goal);
+        showDashboard();
+    } catch (error) {
+        alert('Failed to save goal. Please try again.');
+    }
 }
 
 // Check-in Form
@@ -145,7 +248,7 @@ function cancelCheckIn() {
     showDashboard();
 }
 
-function saveCheckIn(event) {
+async function saveCheckIn(event) {
     event.preventDefault();
 
     const value = parseFloat(document.getElementById('check-in-value').value);
@@ -161,11 +264,15 @@ function saveCheckIn(event) {
     };
 
     goal.checkIns.push(checkIn);
-    saveData();
 
-    // Show progress after check-in
-    showProgress(currentGoalId);
-    currentGoalId = null;
+    try {
+        await saveGoalToFirestore(goal);
+        showProgress(currentGoalId);
+        currentGoalId = null;
+    } catch (error) {
+        alert('Failed to save check-in. Please try again.');
+        goal.checkIns.pop(); // Revert the change
+    }
 }
 
 // Progress View
@@ -352,10 +459,14 @@ function getEncouragementMessage(goal) {
     return "Thank you for showing up and being honest. Tomorrow is a new opportunity! 🌟";
 }
 
-function deleteGoal(goalId) {
+async function deleteGoal(goalId) {
     if (confirm('Are you sure you want to delete this goal?')) {
-        goals = goals.filter(g => g.id !== goalId);
-        saveData();
-        showDashboard();
+        try {
+            await deleteGoalFromFirestore(goalId);
+            goals = goals.filter(g => g.id !== goalId);
+            showDashboard();
+        } catch (error) {
+            alert('Failed to delete goal. Please try again.');
+        }
     }
 }
