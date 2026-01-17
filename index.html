@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ Your Progress Tracker</h1>
+            <p class="tagline">Celebrate every step forward</p>
+        </header>
+
+        <main id="app">
+            <!-- Goals Dashboard -->
+            <div id="dashboard" class="view">
+                <div class="view-header">
+                    <h2>Your Goals</h2>
+                    <button class="btn-primary" onclick="showNewGoalForm()">+ New Goal</button>
+                </div>
+                <div id="goals-list" class="goals-grid"></div>
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <p>You haven't set any goals yet.</p>
+                    <p>Start your journey by creating your first goal!</p>
+                </div>
+            </div>
+
+            <!-- New Goal Form -->
+            <div id="new-goal-form" class="view" style="display: none;">
+                <div class="form-container">
+                    <h2>Create a New Goal</h2>
+                    <form id="goal-form" onsubmit="saveGoal(event)">
+                        <div class="form-group">
+                            <label for="goal-title">What's your goal?</label>
+                            <input type="text" id="goal-title" placeholder="e.g., Lose weight, Run weekly, Zero outbursts" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goal-target">Target number</label>
+                            <input type="number" id="goal-target" step="0.1" placeholder="e.g., 187" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goal-direction">Success means...</label>
+                            <select id="goal-direction" required>
+                                <option value="below">Below or equal to target</option>
+                                <option value="above">Above or equal to target</option>
+                                <option value="equal">Exactly equal to target</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goal-start">Starting value (optional)</label>
+                            <input type="number" id="goal-start" step="0.1" placeholder="e.g., 217">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goal-date">Target date (optional)</label>
+                            <input type="date" id="goal-date">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="cancelGoalForm()">Cancel</button>
+                            <button type="submit" class="btn-primary">Create Goal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Check-in Form -->
+            <div id="check-in-form" class="view" style="display: none;">
+                <div class="form-container">
+                    <h2 id="check-in-title">Weekly Check-in</h2>
+                    <form id="checkin-form" onsubmit="saveCheckIn(event)">
+                        <div class="form-group">
+                            <label id="check-in-label">Current value</label>
+                            <input type="number" id="check-in-value" step="0.1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="check-in-notes">Notes (optional)</label>
+                            <textarea id="check-in-notes" rows="3" placeholder="How are you feeling about your progress?"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="cancelCheckIn()">Cancel</button>
+                            <button type="submit" class="btn-primary">Submit Check-in</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Progress View -->
+            <div id="progress-view" class="view" style="display: none;">
+                <div class="progress-container">
+                    <button class="btn-back" onclick="showDashboard()">← Back to Dashboard</button>
+                    <div id="progress-content"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
