@@ -3,12 +3,12 @@
 // Get this from: Firebase Console > Project Settings > Your Apps > Firebase SDK snippet
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAtCBEnD_b_zIZUI3fiKYQ4c4QsctddIuM",
+    authDomain: "progress-tracker-jtyr.firebaseapp.com",
+    projectId: "progress-tracker-jtyr",
+    storageBucket: "progress-tracker-jtyr.firebasestorage.app",
+    messagingSenderId: "339744442808",
+    appId: "1:339744442808:web:656239da4388b3f0b7a74d"
 };
 
 // Instructions to set up:
