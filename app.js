@@ -228,7 +228,8 @@ async function saveGoal(event) {
         goals.push(goal);
         showDashboard();
     } catch (error) {
-        alert('Failed to save goal. Please try again.');
+        console.error('Error saving goal:', error);
+        alert('Failed to save goal: ' + error.message + '\n\nCheck browser console for details.');
     }
 }
 
@@ -270,7 +271,8 @@ async function saveCheckIn(event) {
         showProgress(currentGoalId);
         currentGoalId = null;
     } catch (error) {
-        alert('Failed to save check-in. Please try again.');
+        console.error('Error saving check-in:', error);
+        alert('Failed to save check-in: ' + error.message + '\n\nCheck browser console for details.');
         goal.checkIns.pop(); // Revert the change
     }
 }
@@ -466,7 +468,8 @@ async function deleteGoal(goalId) {
             goals = goals.filter(g => g.id !== goalId);
             showDashboard();
         } catch (error) {
-            alert('Failed to delete goal. Please try again.');
+            console.error('Error deleting goal:', error);
+            alert('Failed to delete goal: ' + error.message);
         }
     }
 }
